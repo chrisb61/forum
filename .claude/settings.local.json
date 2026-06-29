@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"C:\\\\Dev\\\\Forum\\\\apps\\\\web\")",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"C:\\\\Dev\\\\Forum\\\\apps\\\\api\")",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"C:\\\\Dev\\\\Forum\\\\packages\\\\shared\")",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"C:\\\\Dev\\\\Forum\\\\packages\\\\database\")",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"C:\\\\Dev\\\\Forum\\\\docker\")",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"C:\\\\Dev\\\\Forum\\\\.github\\\\workflows\")",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"C:\\\\Dev\\\\Forum\\\\packages\\\\database\\\\prisma\")",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"C:\\\\Dev\\\\Forum\\\\packages\\\\database\\\\src\")",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"C:\\\\Dev\\\\Forum\\\\apps\\\\api\\\\src\\\\prisma\")",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Dev\\\\Forum\" -Recurse -Name | Where-Object { $_ -notmatch \"node_modules\" } | Select-Object -Skip 100)",
+      "Bash(git init *)",
+      "Bash(git remote *)",
+      "Bash(git add *)"
+    ]
+  }
+}

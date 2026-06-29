@@ -1,0 +1,31 @@
+version: '3.9'
+
+# Development override — only runs the infrastructure services
+# Run this then `npm run dev` to develop locally
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: forum
+      POSTGRES_USER: forum
+      POSTGRES_PASSWORD: forum_password
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - '1025:1025'
+      - '8025:8025'
+
+volumes:
+  postgres_data_dev:
