@@ -2,10 +2,25 @@ node_modules
 dist
 .next
 build
+
+# Local env files (keep .env.example files)
 .env
 .env.local
 .env.*.local
+
+# Logs
 *.log
+npm-debug.log*
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Coverage
 coverage
+
+# Uploads (local dev)
+apps/api/uploads
+
+# Prisma dev migrations
 prisma/migrations/dev

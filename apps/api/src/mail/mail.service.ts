@@ -6,15 +6,23 @@ export class MailService {
   private readonly logger = new Logger(MailService.name);
   private transporter: nodemailer.Transporter;
 
+  private readonly devMode: boolean;
+
   constructor() {
-    this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'localhost',
-      port: parseInt(process.env.SMTP_PORT || '1025'),
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: process.env.SMTP_USER
-        ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-        : undefined,
-    });
+    // In dev with no SMTP configured, log emails to console instead of failing
+    this.devMode =
+      process.env.NODE_ENV !== 'production' && !process.env.SMTP_HOST;
+
+    if (!this.devMode) {
+      this.transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || 'localhost',
+        port: parseInt(process.env.SMTP_PORT || '587'),
+        secure: process.env.SMTP_SECURE === 'true',
+        auth: process.env.SMTP_USER
+          ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+          : undefined,
+      });
+    }
   }
 
   private get fromAddress() {
@@ -40,6 +48,12 @@ export class MailService {
   }
 
   private async send(to: string, subject: string, text: string) {
+    if (this.devMode) {
+      this.logger.log(
+        `\n📧 [DEV EMAIL]\n  To: ${to}\n  Subject: ${subject}\n  Body: ${text}\n`,
+      );
+      return;
+    }
     try {
       await this.transporter.sendMail({ from: this.fromAddress, to, subject, text });
     } catch (err) {

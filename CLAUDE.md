@@ -1,51 +1,53 @@
 # Forum Platform
 
-A modern, production-ready discussion forum built with Next.js, NestJS, PostgreSQL, and Prisma.
+A modern discussion forum built with Next.js, NestJS, PostgreSQL, and Prisma.
 
-## Project Structure
+## Prerequisites (no Docker needed)
 
-```
-Forum/
-├── apps/
-│   ├── api/          # NestJS REST API (port 4000)
-│   └── web/          # Next.js frontend (port 3000)
-├── packages/
-│   └── database/     # Prisma schema, migrations, seed data
-├── docker-compose.yml          # Full production stack
-└── docker-compose.dev.yml      # Infrastructure only (for local dev)
-```
+- **Node.js v18+** — https://nodejs.org
+- **PostgreSQL 14+** — https://www.postgresql.org/download/windows/
+  - During install, set the password for the `postgres` user (default used here: `postgres`)
 
-## Quick Start
+## Quick Start (Windows)
 
-### One-command setup (Docker)
-
-```bash
-docker compose up --build
+```powershell
+# 1. Run the automated setup script
+cd C:\Dev\Forum
+.\setup.ps1
 ```
 
-Then visit http://localhost:3000
+That script installs dependencies, creates the database, runs migrations, and seeds demo data.
 
-### Local development
+Then start the app:
+```powershell
+npm run dev
+```
 
-```bash
-# Start infrastructure
-docker compose -f docker-compose.dev.yml up -d
+- Web → http://localhost:3000  
+- API → http://localhost:4000  
+- API docs → http://localhost:4000/api/docs
 
-# Install dependencies
+## Manual Setup
+
+If you prefer step-by-step:
+
+```powershell
+# Install npm packages
 npm install
 
-# Set up environment files
-cp apps/api/.env.example apps/api/.env
-cp apps/web/.env.example apps/web/.env.local
+# Create the PostgreSQL database (open psql or pgAdmin and run):
+# CREATE DATABASE forum;
 
-# Generate Prisma client and run migrations
+# Generate Prisma client
 npm run db:generate
+
+# Run migrations (creates all tables)
 npm run db:migrate
 
-# Seed the database
+# Seed demo data
 npm run db:seed
 
-# Start dev servers
+# Start both servers
 npm run dev
 ```
 
@@ -57,32 +59,52 @@ npm run dev
 | moderator | moderator@forum.local | Mod@12345 | MODERATOR |
 | member1 | member@forum.local | Member@12345 | MEMBER |
 
-## API Documentation
+## Environment Files
 
-When the API is running, visit: http://localhost:4000/api/docs
+- `apps/api/.env` — API config (DATABASE_URL, JWT_SECRET, etc.)
+- `apps/web/.env.local` — Frontend config (NEXT_PUBLIC_API_URL)
 
-## Email (Development)
+Edit `apps/api/.env` if your PostgreSQL credentials differ from the defaults:
+```
+DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/forum
+```
 
-MailHog is included for email testing:
-- SMTP: localhost:1025
-- Web UI: http://localhost:8025
+## Email in Development
+
+With `SMTP_HOST` left blank in `.env`, emails are printed to the **API console** instead of sent. This means:
+- Email verification links appear in the terminal running the API
+- Password reset links appear there too
+
+## Project Structure
+
+```
+Forum/
+├── apps/
+│   ├── api/          # NestJS REST API (port 4000)
+│   └── web/          # Next.js 14 frontend (port 3000)
+├── packages/
+│   └── database/     # Prisma schema, migrations, seed data
+├── setup.ps1         # One-shot Windows setup script
+└── docker-compose.yml  # Optional: Docker deployment
+```
+
+## Key Commands
+
+```powershell
+npm run dev              # Start API + web in development
+npm run dev:api          # API only
+npm run dev:web          # Web only
+npm run build            # Build for production
+npm run test             # Run tests
+npm run db:generate      # Regenerate Prisma client after schema changes
+npm run db:migrate       # Run new migrations
+npm run db:seed          # Re-seed demo data
+npm run db:studio        # Open Prisma Studio (database browser)
+```
 
 ## Tech Stack
 
 - **Frontend**: Next.js 14, TypeScript, Tailwind CSS, shadcn/ui, TanStack Query
-- **Backend**: NestJS, TypeScript, Passport JWT, Swagger
+- **Backend**: NestJS, TypeScript, Passport JWT
 - **Database**: PostgreSQL, Prisma ORM
-- **Cache**: Redis
 - **Auth**: JWT (7-day tokens), Argon2 hashing
-- **Email**: Nodemailer + MailHog (dev)
-
-## Key Commands
-
-```bash
-npm run dev              # Start both API and web in development
-npm run build            # Build all packages
-npm run test             # Run all tests
-npm run db:generate      # Regenerate Prisma client after schema changes
-npm run db:migrate       # Apply migrations
-npm run db:seed          # Seed development data
-```

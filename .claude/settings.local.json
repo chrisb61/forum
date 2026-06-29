@@ -13,7 +13,14 @@
       "PowerShell(Get-ChildItem -Path \"C:\\\\Dev\\\\Forum\" -Recurse -Name | Where-Object { $_ -notmatch \"node_modules\" } | Select-Object -Skip 100)",
       "Bash(git init *)",
       "Bash(git remote *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git config *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(gh auth *)",
+      "PowerShell(git -C \"C:\\\\Dev\\\\Forum\" config --get remote.origin.url)",
+      "PowerShell(git -C \"C:\\\\Dev\\\\Forum\" push -u origin master 2>&1)",
+      "PowerShell(Invoke-WebRequest -Uri \"https://api.github.com/repos/DarrylC73/forum\" -UseBasicParsing)"
     ]
   }
 }
