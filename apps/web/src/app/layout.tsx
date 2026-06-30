@@ -3,12 +3,14 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import Providers from '@/components/layout/Providers';
 import Navbar from '@/components/layout/Navbar';
+import Vera from '@/components/vera/Vera';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: { default: 'Forum Platform', template: '%s | Forum Platform' },
-  description: 'A modern community discussion forum',
+  title: { default: 'ESG Intelligence Network', template: '%s | ESG Intelligence Network' },
+  description: 'A private intelligence network for non-executive directors, board advisors, and sustainability professionals.',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -20,8 +22,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Navbar />
             <main className="flex-1 container py-6">{children}</main>
             <footer className="border-t py-4 text-center text-sm text-muted-foreground">
-              <p>Forum Platform &copy; {new Date().getFullYear()}</p>
+              <p>ESG Intelligence Network &copy; {new Date().getFullYear()}</p>
             </footer>
+            <Vera />
           </div>
         </Providers>
       </body>

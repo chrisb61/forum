@@ -6,11 +6,11 @@
     "generate": "prisma generate",
     "migrate": "prisma migrate deploy",
     "migrate:dev": "prisma migrate dev",
-    "seed": "ts-node --require dotenv/config --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts dotenv_config_path=../../apps/api/.env",
+    "seed": "ts-node prisma/seed.ts",
     "studio": "prisma studio"
   },
   "prisma": {
-    "seed": "ts-node --require dotenv/config --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts dotenv_config_path=../../apps/api/.env"
+    "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",

@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, Search, Bell, User, LogOut, Settings, Shield, ChevronDown } from 'lucide-react';
+import { Network, Bell, User, LogOut, Settings, Shield, ChevronDown, MessageSquare } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Navbar() {
@@ -12,9 +12,12 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center gap-4">
-        <Link href="/" className="flex items-center gap-2 font-bold text-lg">
-          <MessageSquare className="h-5 w-5 text-primary" />
-          <span>Forum</span>
+        <Link href="/" className="flex items-center gap-2">
+          <Network className="h-5 w-5 text-primary" />
+          <div className="flex flex-col leading-tight">
+            <span className="font-bold text-sm">ESG Intelligence</span>
+            <span className="text-[10px] tracking-widest text-primary uppercase font-medium">Network</span>
+          </div>
         </Link>
 
         <nav className="flex items-center gap-1 ml-4">
@@ -23,6 +26,12 @@ export default function Navbar() {
           </Link>
           <Link href="/search" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md hover:bg-accent transition-colors">
             Search
+          </Link>
+          <Link href="/leaderboard" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md hover:bg-accent transition-colors">
+            Leaderboard
+          </Link>
+          <Link href="/guide" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md hover:bg-accent transition-colors">
+            Guide
           </Link>
         </nav>
 

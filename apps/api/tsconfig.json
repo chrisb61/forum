@@ -8,6 +8,8 @@
     "baseUrl": "./",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "strictPropertyInitialization": false,
+    "strict": false,
     "paths": {
       "@forum/database": ["../../packages/database/src"]
     }

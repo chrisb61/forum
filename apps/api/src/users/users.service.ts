@@ -1,7 +1,21 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { Role } from '@forum/database';
+
+const PUBLIC_USER_SELECT = {
+  id: true,
+  username: true,
+  displayName: true,
+  avatar: true,
+  bio: true,
+  role: true,
+  reputation: true,
+  postCount: true,
+  createdAt: true,
+  badges: { include: { badge: true } },
+  professionalProfile: true,
+  _count: { select: { threads: true, posts: true } },
+};
 
 @Injectable()
 export class UsersService {
@@ -10,37 +24,42 @@ export class UsersService {
   async findOne(username: string) {
     const user = await this.prisma.user.findUnique({
       where: { username },
-      select: {
-        id: true,
-        username: true,
-        displayName: true,
-        avatar: true,
-        bio: true,
-        role: true,
-        reputation: true,
-        postCount: true,
-        createdAt: true,
-        badges: { include: { badge: true } },
-        _count: { select: { threads: true, posts: true } },
-      },
+      select: PUBLIC_USER_SELECT,
     });
     if (!user) throw new NotFoundException('User not found');
     return user;
   }
 
   async updateProfile(userId: string, dto: UpdateProfileDto) {
-    return this.prisma.user.update({
+    const {
+      displayName, bio, avatar,
+      headline, location, linkedIn, website,
+      availability, sectors, expertiseAreas, qualifications, boardExperience,
+    } = dto;
+
+    await this.prisma.user.update({
       where: { id: userId },
-      data: dto,
-      select: {
-        id: true,
-        username: true,
-        displayName: true,
-        avatar: true,
-        bio: true,
-        role: true,
-        reputation: true,
-      },
+      data: { displayName, bio, avatar },
+    });
+
+    const professionalData = {
+      headline, location, linkedIn, website,
+      availability,
+      sectors: sectors ?? [],
+      expertiseAreas: expertiseAreas ?? [],
+      qualifications: qualifications ?? [],
+      boardExperience: boardExperience ?? [],
+    };
+
+    await this.prisma.professionalProfile.upsert({
+      where: { userId },
+      create: { userId, ...professionalData },
+      update: professionalData,
+    });
+
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+      select: PUBLIC_USER_SELECT,
     });
   }
 

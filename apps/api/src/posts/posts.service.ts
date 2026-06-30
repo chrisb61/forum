@@ -8,12 +8,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreatePostDto, UpdatePostDto } from './dto/create-post.dto';
 import { Role, ThreadStatus } from '@forum/database';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ReputationService, POINTS } from '../reputation/reputation.service';
 
 @Injectable()
 export class PostsService {
   constructor(
     private prisma: PrismaService,
     private notifications: NotificationsService,
+    private reputation: ReputationService,
   ) {}
 
   async findByThread(threadId: string, page: number, limit: number) {
@@ -91,6 +93,8 @@ export class PostsService {
       post.id,
       'THREAD_REPLY',
     );
+
+    await this.reputation.awardPoints(userId, POINTS.POST_CREATED, 'post created');
 
     return post;
   }

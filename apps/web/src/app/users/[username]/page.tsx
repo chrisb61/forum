@@ -7,12 +7,59 @@ import { User, Thread, PaginatedResponse } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { formatDate, timeAgo } from '@/lib/utils';
-import { MessageSquare, Calendar, Star, FileText } from 'lucide-react';
+import {
+  MessageSquare, Calendar, Award, FileText,
+  MapPin, Linkedin, Globe, Briefcase, CheckCircle, ExternalLink
+} from 'lucide-react';
+
+const LEVELS = [
+  { name: 'Newcomer', min: 0 },
+  { name: 'Contributor', min: 100 },
+  { name: 'Established', min: 500 },
+  { name: 'Expert', min: 1500 },
+  { name: 'Authority', min: 5000 },
+  { name: 'Luminary', min: 10000 },
+];
+
+function getLevel(rep: number) {
+  let level = LEVELS[0];
+  for (const l of LEVELS) { if (rep >= l.min) level = l; }
+  const idx = LEVELS.indexOf(level);
+  const next = LEVELS[idx + 1] ?? null;
+  const progress = next
+    ? Math.round(((rep - level.min) / (next.min - level.min)) * 100)
+    : 100;
+  return { level, next, progress };
+}
+
+interface BoardRole {
+  company: string;
+  role: string;
+  startYear: number;
+  endYear?: number;
+  current: boolean;
+}
+
+interface ProfessionalProfile {
+  headline?: string;
+  location?: string;
+  linkedIn?: string;
+  website?: string;
+  availability?: string;
+  sectors?: string[];
+  expertiseAreas?: string[];
+  qualifications?: string[];
+  boardExperience?: BoardRole[];
+}
+
+interface UserWithProfile extends User {
+  professionalProfile?: ProfessionalProfile;
+}
 
 export default function UserProfilePage() {
   const { username } = useParams();
 
-  const { data: user, isLoading } = useQuery<User>({
+  const { data: user, isLoading } = useQuery<UserWithProfile>({
     queryKey: ['user', username],
     queryFn: () => api.get(`/users/${username}`),
   });
@@ -23,102 +70,240 @@ export default function UserProfilePage() {
     enabled: !!user,
   });
 
-  if (isLoading) {
-    return <div className="h-64 bg-muted rounded animate-pulse" />;
-  }
+  if (isLoading) return <div className="h-64 bg-muted rounded animate-pulse" />;
+  if (!user) return <div className="text-center py-12 text-muted-foreground">User not found</div>;
 
-  if (!user) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">User not found</p>
-      </div>
-    );
-  }
+  const pp = user.professionalProfile;
+  const { level, next, progress } = getLevel(user.reputation);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div className="space-y-4">
-        <Card>
-          <CardContent className="pt-6 text-center">
+    <div className="max-w-5xl mx-auto space-y-6">
+
+      {/* ── Hero banner ── */}
+      <div className="bg-card border border-border/60 rounded-lg p-6">
+        <div className="flex flex-col sm:flex-row gap-6 items-start">
+
+          {/* Avatar */}
+          <div className="shrink-0">
             {user.avatar ? (
-              <img src={user.avatar} alt={user.username} className="w-24 h-24 rounded-full mx-auto mb-4 object-cover" />
+              <img src={user.avatar} alt={user.username}
+                className="w-24 h-24 rounded-full object-cover border-2 border-primary/30" />
             ) : (
-              <div className="w-24 h-24 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-3xl font-bold mx-auto mb-4">
-                {user.username.charAt(0).toUpperCase()}
+              <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center text-primary text-3xl font-bold border-2 border-primary/30">
+                {(user.displayName || user.username).charAt(0).toUpperCase()}
               </div>
             )}
-            <h1 className="text-xl font-bold">{user.displayName || user.username}</h1>
-            <p className="text-muted-foreground text-sm">@{user.username}</p>
-            <Badge className="mt-2" variant="secondary">{user.role}</Badge>
-            {user.bio && <p className="text-sm mt-3 text-muted-foreground">{user.bio}</p>}
-          </CardContent>
-        </Card>
+          </div>
 
-        <Card>
-          <CardContent className="pt-4 space-y-3">
-            <div className="flex items-center gap-2 text-sm">
-              <Star className="h-4 w-4 text-yellow-500" />
-              <span className="font-medium">{user.reputation}</span>
-              <span className="text-muted-foreground">reputation</span>
+          {/* Name & headline */}
+          <div className="flex-1 space-y-2">
+            <div>
+              <h1 className="text-2xl font-bold">{user.displayName || user.username}</h1>
+              <p className="text-muted-foreground text-sm">@{user.username}</p>
             </div>
-            <div className="flex items-center gap-2 text-sm">
-              <MessageSquare className="h-4 w-4 text-primary" />
-              <span className="font-medium">{user.postCount}</span>
-              <span className="text-muted-foreground">posts</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">Joined {formatDate(user.createdAt)}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {user.badges && user.badges.length > 0 && (
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Badges</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-wrap gap-2">
-              {user.badges.map((ub) => (
-                <span
-                  key={ub.badge.id}
-                  title={ub.badge.description}
-                  className="flex items-center gap-1 text-xs px-2 py-1 rounded-full border"
-                  style={{ borderColor: ub.badge.color || undefined }}
-                >
-                  {ub.badge.icon} {ub.badge.name}
+            {pp?.headline && (
+              <p className="text-primary font-medium">{pp.headline}</p>
+            )}
+            {pp?.qualifications && pp.qualifications.length > 0 && (
+              <p className="text-sm text-muted-foreground tracking-wide">
+                {pp.qualifications.join(' · ')}
+              </p>
+            )}
+            <div className="flex flex-wrap gap-3 text-sm text-muted-foreground pt-1">
+              {pp?.location && (
+                <span className="flex items-center gap-1">
+                  <MapPin className="h-3.5 w-3.5" /> {pp.location}
                 </span>
-              ))}
-            </CardContent>
-          </Card>
-        )}
+              )}
+              {pp?.linkedIn && (
+                <a href={pp.linkedIn} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1 hover:text-primary transition-colors">
+                  <Linkedin className="h-3.5 w-3.5" /> LinkedIn
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+              {pp?.website && (
+                <a href={pp.website} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1 hover:text-primary transition-colors">
+                  <Globe className="h-3.5 w-3.5" /> Website
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+            </div>
+            {pp?.availability && (
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
+                <CheckCircle className="h-3 w-3" /> {pp.availability}
+              </span>
+            )}
+            {user.bio && <p className="text-sm text-muted-foreground leading-relaxed pt-1">{user.bio}</p>}
+          </div>
+
+          {/* Role badge */}
+          <Badge variant="secondary" className="shrink-0">{user.role.replace('_', ' ')}</Badge>
+        </div>
       </div>
 
-      <div className="md:col-span-2 space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Recent Threads
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {!threads || threads.data.length === 0 ? (
-              <p className="p-4 text-sm text-muted-foreground">No threads yet.</p>
-            ) : (
-              <div className="divide-y">
-                {threads.data.map((t: Thread) => (
-                  <div key={t.id} className="px-4 py-3">
-                    <Link href={`/threads/${t.slug}`} className="text-sm font-medium hover:text-primary">
-                      {t.title}
-                    </Link>
-                    <p className="text-xs text-muted-foreground mt-0.5">{timeAgo(t.createdAt)} · {t._count?.posts || 0} replies</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        {/* ── Left column ── */}
+        <div className="space-y-4">
+
+          {/* Reputation & level */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Award className="h-4 w-4 text-primary" /> Reputation
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-end justify-between">
+                <span className="text-2xl font-bold text-primary">{user.reputation.toLocaleString()}</span>
+                <span className="text-sm font-semibold text-muted-foreground">{level.name}</span>
+              </div>
+              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary rounded-full transition-all duration-500"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              {next && (
+                <p className="text-xs text-muted-foreground">
+                  {(next.min - user.reputation).toLocaleString()} pts to {next.name}
+                </p>
+              )}
+              <div className="pt-1 space-y-1 text-sm">
+                <div className="flex justify-between text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <MessageSquare className="h-3.5 w-3.5" /> Posts
+                  </span>
+                  <span className="font-medium text-foreground">{user.postCount}</span>
+                </div>
+                <div className="flex justify-between text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3.5 w-3.5" /> Member since
+                  </span>
+                  <span className="font-medium text-foreground">{formatDate(user.createdAt)}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Badges */}
+          {user.badges && user.badges.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Badges</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {user.badges.map((ub: any) => (
+                  <div key={ub.badge.id}
+                    className="flex items-center gap-2 text-xs p-2 rounded-md bg-muted/40">
+                    <span className="text-base">{ub.badge.icon}</span>
+                    <div>
+                      <div className="font-semibold">{ub.badge.name}</div>
+                      <div className="text-muted-foreground">{ub.badge.description}</div>
+                    </div>
                   </div>
                 ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Sectors */}
+          {pp?.sectors && pp.sectors.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Sectors</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-wrap gap-2">
+                {pp.sectors.map((s) => (
+                  <span key={s}
+                    className="text-xs px-2 py-1 rounded-full border border-primary/30 text-primary bg-primary/5">
+                    {s}
+                  </span>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Expertise */}
+          {pp?.expertiseAreas && pp.expertiseAreas.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Areas of Expertise</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-wrap gap-2">
+                {pp.expertiseAreas.map((e) => (
+                  <span key={e}
+                    className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">
+                    {e}
+                  </span>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {/* ── Right column ── */}
+        <div className="md:col-span-2 space-y-4">
+
+          {/* Board experience */}
+          {pp?.boardExperience && pp.boardExperience.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Briefcase className="h-4 w-4 text-primary" /> Board Experience
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {pp.boardExperience.map((b: BoardRole, i: number) => (
+                  <div key={i} className="flex gap-3 pb-3 border-b border-border/40 last:border-0 last:pb-0">
+                    <div className="mt-1 h-2 w-2 rounded-full bg-primary shrink-0" />
+                    <div>
+                      <div className="font-semibold text-sm">{b.role}</div>
+                      <div className="text-muted-foreground text-sm">{b.company}</div>
+                      <div className="text-xs text-muted-foreground/70 mt-0.5">
+                        {b.startYear} – {b.current ? 'Present' : b.endYear}
+                        {b.current && (
+                          <span className="ml-2 text-primary font-medium">Current</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Recent threads */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <FileText className="h-4 w-4" /> Recent Discussions
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              {!threads || threads.data.length === 0 ? (
+                <p className="p-4 text-sm text-muted-foreground">No discussions yet.</p>
+              ) : (
+                <div className="divide-y divide-border/40">
+                  {threads.data.map((t: Thread) => (
+                    <div key={t.id} className="px-4 py-3">
+                      <Link href={`/threads/${t.slug}`}
+                        className="text-sm font-medium hover:text-primary transition-colors">
+                        {t.title}
+                      </Link>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {timeAgo(t.createdAt)} · {t._count?.posts || 0} replies
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+        </div>
       </div>
     </div>
   );

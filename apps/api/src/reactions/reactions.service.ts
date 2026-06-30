@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ReactionType } from '@forum/database';
+import { ReputationService, POINTS } from '../reputation/reputation.service';
 
 @Injectable()
 export class ReactionsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private reputation: ReputationService,
+  ) {}
 
   async toggle(userId: string, postId: string, type: ReactionType) {
     const existing = await this.prisma.reaction.findUnique({
@@ -13,7 +17,6 @@ export class ReactionsService {
 
     if (existing) {
       await this.prisma.reaction.delete({ where: { id: existing.id } });
-      await this.prisma.post.update({ where: { id: postId }, data: {} });
       return { action: 'removed', type };
     }
 
@@ -22,10 +25,19 @@ export class ReactionsService {
 
     await this.prisma.reaction.create({ data: { userId, postId, type } });
 
-    await this.prisma.user.update({
-      where: { id: post.authorId },
-      data: { reputation: { increment: 1 } },
-    });
+    if (post.authorId !== userId) {
+      const pointsMap: Record<ReactionType, number> = {
+        LIKE: POINTS.REACTION_LIKE,
+        HELPFUL: POINTS.REACTION_HELPFUL,
+        INSIGHTFUL: POINTS.REACTION_INSIGHTFUL,
+        FUNNY: POINTS.REACTION_FUNNY,
+      };
+      await this.reputation.awardPoints(
+        post.authorId,
+        pointsMap[type],
+        `reaction ${type} received`,
+      );
+    }
 
     return { action: 'added', type };
   }
