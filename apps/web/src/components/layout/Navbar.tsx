@@ -27,6 +27,9 @@ export default function Navbar() {
           <Link href="/search" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md hover:bg-accent transition-colors">
             Search
           </Link>
+          <Link href="/opportunities" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md hover:bg-accent transition-colors">
+            Opportunities
+          </Link>
           <Link href="/leaderboard" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md hover:bg-accent transition-colors">
             Leaderboard
           </Link>

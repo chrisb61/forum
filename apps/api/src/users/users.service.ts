@@ -33,8 +33,9 @@ export class UsersService {
   async updateProfile(userId: string, dto: UpdateProfileDto) {
     const {
       displayName, bio, avatar,
-      headline, location, linkedIn, website,
+      headline, location, linkedIn, website, twitterX, professionalEmail, phone,
       availability, sectors, expertiseAreas, qualifications, boardExperience,
+      showEmail, showPhone, showLinkedIn, profileVisibility,
     } = dto;
 
     await this.prisma.user.update({
@@ -43,12 +44,16 @@ export class UsersService {
     });
 
     const professionalData = {
-      headline, location, linkedIn, website,
+      headline, location, linkedIn, website, twitterX, professionalEmail, phone,
       availability,
       sectors: sectors ?? [],
       expertiseAreas: expertiseAreas ?? [],
       qualifications: qualifications ?? [],
       boardExperience: boardExperience ?? [],
+      showEmail: showEmail ?? false,
+      showPhone: showPhone ?? false,
+      showLinkedIn: showLinkedIn ?? true,
+      profileVisibility: profileVisibility ?? 'members',
     };
 
     await this.prisma.professionalProfile.upsert({

@@ -18,6 +18,9 @@ import { MailModule } from './mail/mail.module';
 import { UploadModule } from './upload/upload.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ReputationModule } from './reputation/reputation.module';
+import { OpportunitiesModule } from './opportunities/opportunities.module';
+import { EndorsementsModule } from './endorsements/endorsements.module';
+import { CvModule } from './cv/cv.module';
 
 @Module({
   imports: [
@@ -40,6 +43,9 @@ import { ReputationModule } from './reputation/reputation.module';
     AdminModule,
     UploadModule,
     ReputationModule,
+    OpportunitiesModule,
+    EndorsementsModule,
+    CvModule,
   ],
 })
 export class AppModule {}

@@ -87,11 +87,36 @@ const PAGE_SCRIPTS: Record<string, VeraMessage[]> = {
       mood: 'happy',
     },
   ],
+  '/opportunities': [
+    {
+      text: "These are the board opportunities — NED, Chair, Advisory and Executive roles posted by members.",
+      mood: 'neutral',
+    },
+    {
+      text: "Find a role that fits your experience, or post one if you're looking for talent.",
+      mood: 'thinking',
+    },
+    {
+      text: "Express interest with a personal note — the poster will see your profile and reputation.",
+      mood: 'happy',
+      action: { label: 'Post an opportunity', href: '/opportunities/new' },
+    },
+  ],
+  '/opportunities/new': [
+    {
+      text: "You're posting a board opportunity — great for finding the right talent in the network.",
+      mood: 'happy',
+    },
+    {
+      text: "Be specific about time commitment and sector. The right people will find you.",
+      mood: 'thinking',
+    },
+  ],
 };
 
 const DEFAULT_MESSAGES: VeraMessage[] = [
   {
-    text: "I'm Vera — need help navigating? Visit the guide anytime.",
+    text: "Hi, I'm Vera — do you need help navigating? Visit the guide anytime.",
     mood: 'neutral',
     action: { label: 'Open guide', href: '/guide' },
   },
@@ -170,8 +195,19 @@ export default function Vera() {
     window.speechSynthesis?.cancel();
     const dismissed = getDismissed();
     if (pathname === '/' || !dismissed.includes(pathname)) {
-      const timer = setTimeout(() => { setVisible(true); setPulse(true); }, 1200);
+      const timer = setTimeout(() => {
+        setVisible(true);
+        setPulse(true);
+        // Read voiceOn from localStorage directly since state may lag
+        const voiceEnabled = localStorage.getItem(VOICE_KEY) === 'true';
+        if (voiceEnabled) {
+          const msgs = PAGE_SCRIPTS[pathname] ?? DEFAULT_MESSAGES;
+          speak(msgs[0].text);
+        }
+      }, 1200);
       return () => clearTimeout(timer);
+    } else {
+      setVisible(false);
     }
   }, [pathname, getDismissed]);
 
@@ -227,10 +263,6 @@ export default function Vera() {
     }
   };
 
-  // Speak when Vera first appears
-  useEffect(() => {
-    if (visible && !minimised && voiceOn) speak(current.text);
-  }, [visible]); // eslint-disable-line
 
   if (!visible) return null;
 

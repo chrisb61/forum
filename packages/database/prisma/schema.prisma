@@ -112,9 +112,13 @@ model User {
   receivedMessages DirectMessage[] @relation("ReceivedMessages")
   blockedUsers  UserBlock[]      @relation("BlockingUser")
   blockedByUsers UserBlock[]     @relation("BlockedUser")
-  pollVotes           PollVote[]
-  postVersions        PostVersion[]
-  professionalProfile ProfessionalProfile?
+  pollVotes              PollVote[]
+  postVersions           PostVersion[]
+  professionalProfile    ProfessionalProfile?
+  boardOpportunities     BoardOpportunity[]
+  opportunityExpressions OpportunityExpression[]
+  endorsementsGiven      Endorsement[]           @relation("EndorsementsGiven")
+  endorsementsReceived   Endorsement[]           @relation("EndorsementsReceived")
 
   @@index([email])
   @@index([username])
@@ -445,18 +449,114 @@ model SiteSettings {
 }
 
 model ProfessionalProfile {
-  userId            String   @id
-  headline          String?
-  location          String?
-  linkedIn          String?
-  website           String?
-  availability      String?
-  sectors           String[]
-  expertiseAreas    String[]
-  qualifications    String[]
-  boardExperience   Json?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  userId              String   @id
+  headline            String?
+  location            String?
+  linkedIn            String?
+  website             String?
+  twitterX            String?
+  professionalEmail   String?
+  phone               String?
+  availability        String?
+  sectors             String[]
+  expertiseAreas      String[]
+  qualifications      String[]
+  boardExperience     Json?
+  // GDPR privacy controls
+  showEmail           Boolean  @default(false)
+  showPhone           Boolean  @default(false)
+  showLinkedIn        Boolean  @default(true)
+  profileVisibility   String   @default("members")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum OpportunityType {
+  NED
+  CHAIR
+  ADVISORY_BOARD
+  COMMITTEE
+  TRUSTEE
+  FRACTIONAL_EXECUTIVE
+  INVESTOR
+  MENTOR
+}
+
+enum OpportunityStatus {
+  OPEN
+  CLOSED
+  FILLED
+}
+
+model BoardOpportunity {
+  id              String            @id @default(cuid())
+  postedById      String
+  title           String
+  organisation    String
+  type            OpportunityType
+  status          OpportunityStatus @default(OPEN)
+  description     String
+  requirements    String?
+  sectors         String[]
+  location        String?
+  remuneration    String?
+  timeCommitment  String?
+  closingDate     DateTime?
+  isAnonymous     Boolean           @default(false)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  postedBy        User                      @relation(fields: [postedById], references: [id])
+  expressions     OpportunityExpression[]
+
+  @@index([postedById])
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model OpportunityExpression {
+  id            String   @id @default(cuid())
+  opportunityId String
+  userId        String
+  message       String?
+  createdAt     DateTime @default(now())
+
+  opportunity   BoardOpportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  user          User             @relation(fields: [userId], references: [id])
+
+  @@unique([opportunityId, userId])
+  @@index([opportunityId])
+  @@index([userId])
+}
+
+enum EndorsementSkill {
+  GOVERNANCE
+  STRATEGIC_THINKING
+  LEADERSHIP
+  ESG_KNOWLEDGE
+  DIGITAL_EXPERTISE
+  FINANCIAL_EXPERTISE
+  RISK_MANAGEMENT
+  STAKEHOLDER_ENGAGEMENT
+  TRANSFORMATION
+  INVESTOR_RELATIONS
+}
+
+model Endorsement {
+  id          String           @id @default(cuid())
+  endorserId  String
+  endorseeId  String
+  skill       EndorsementSkill
+  comment     String?
+  createdAt   DateTime         @default(now())
+
+  endorser    User @relation("EndorsementsGiven", fields: [endorserId], references: [id])
+  endorsee    User @relation("EndorsementsReceived", fields: [endorseeId], references: [id])
+
+  @@unique([endorserId, endorseeId, skill])
+  @@index([endorseeId])
+  @@index([endorserId])
 }

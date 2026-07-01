@@ -1,4 +1,4 @@
-import { IsOptional, IsString, MaxLength, IsUrl, IsArray } from 'class-validator';
+import { IsOptional, IsString, MaxLength, IsUrl, IsArray, IsBoolean } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateProfileDto {
@@ -47,6 +47,44 @@ export class UpdateProfileDto {
   @IsString()
   @MaxLength(100)
   availability?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  twitterX?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  professionalEmail?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(30)
+  phone?: string;
+
+  // GDPR privacy controls
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  showEmail?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  showPhone?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  showLinkedIn?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  profileVisibility?: string;
 
   @ApiPropertyOptional()
   @IsOptional()

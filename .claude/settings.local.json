@@ -20,7 +20,24 @@
       "Bash(gh auth *)",
       "PowerShell(git -C \"C:\\\\Dev\\\\Forum\" config --get remote.origin.url)",
       "PowerShell(git -C \"C:\\\\Dev\\\\Forum\" push -u origin master 2>&1)",
-      "PowerShell(Invoke-WebRequest -Uri \"https://api.github.com/repos/DarrylC73/forum\" -UseBasicParsing)"
+      "PowerShell(Invoke-WebRequest -Uri \"https://api.github.com/repos/DarrylC73/forum\" -UseBasicParsing)",
+      "Read(//c/Users/C Bullock/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin/725747c8-c66c-46df-88a2-70ca266bba53/9fe1a681-bcc2-49c6-bfe8-6453f1715741/skills/docx/**)",
+      "Bash(extract-text \"C:\\\\Users\\\\C Bullock\\\\OneDrive\\\\Documents\\\\00012_ES\\\\ESForum_The_Question_What_is our_Forums_USP.docx\")",
+      "Bash(pandoc \"C:\\\\Users\\\\C Bullock\\\\OneDrive\\\\Documents\\\\00012_ES\\\\ESForum_The_Question_What_is our_Forums_USP.docx\" -t markdown)",
+      "Bash(python -c ' *)",
+      "WebFetch(domain:www.christopherfbullock.com)",
+      "PowerShell(New-Item -ItemType Directory -Force \"C:\\\\Dev\\\\Forum\\\\apps\\\\web\\\\src\\\\app\\\\guide\")",
+      "PowerShell(Copy-Item \"C:\\\\Dev\\\\Forum\\\\apps\\\\web\\\\src\\\\app\\\\icon.svg\" \"C:\\\\Dev\\\\Forum\\\\apps\\\\web\\\\public\\\\icon.svg\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"C:\\\\Dev\\\\Forum\\\\apps\\\\api\\\\src\\\\reputation\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"C:\\\\Dev\\\\Forum\\\\apps\\\\web\\\\src\\\\app\\\\leaderboard\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"C:\\\\Dev\\\\Forum\\\\apps\\\\web\\\\src\\\\components\\\\vera\")",
+      "PowerShell(npm install --save-dev nodemon tsconfig-paths --workspace=apps/api)",
+      "Bash(extract-text \"C:\\\\Users\\\\C Bullock\\\\OneDrive\\\\Documents\\\\00012_ES\\\\ESForum_Gaps_Features.docx\")",
+      "Bash(python scripts/office/unpack.py \"C:\\\\Users\\\\C Bullock\\\\OneDrive\\\\Documents\\\\00012_ES\\\\ESForum_Gaps_Features.docx\" unpacked/)",
+      "PowerShell(Add-Type -AssemblyName System.IO.Compression.FileSystem; $zip = [System.IO.Compression.ZipFile]::OpenRead\\(\"C:\\\\Users\\\\C Bullock\\\\OneDrive\\\\Documents\\\\00012_ES\\\\ESForum_Gaps_Features.docx\"\\); $entry = $zip.Entries | Where-Object { $_.FullName -eq 'word/document.xml' }; $reader = New-Object System.IO.StreamReader\\($entry.Open\\(\\)\\); $reader.ReadToEnd\\(\\); $reader.Close\\(\\); $zip.Dispose\\(\\))",
+      "Bash(mkdir -p \"C:\\\\Dev\\\\Forum\\\\apps\\\\web\\\\src\\\\app\\\\opportunities\" \"C:\\\\Dev\\\\Forum\\\\apps\\\\web\\\\src\\\\app\\\\opportunities\\\\new\" \"C:\\\\Dev\\\\Forum\\\\apps\\\\web\\\\src\\\\app\\\\opportunities\\\\[id]\")",
+      "PowerShell(cd \"C:\\\\Dev\\\\Forum\"; $env:DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/forum\"; npx prisma migrate dev --name board_opportunities_endorsements --schema=packages/database/prisma/schema.prisma 2>&1)",
+      "PowerShell(cd \"C:\\\\Dev\\\\Forum\"; $env:DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/forum\"; npx prisma migrate dev --name professional_profile_contact_fields --schema=packages/database/prisma/schema.prisma 2>&1)"
     ]
   }
 }
