@@ -24,7 +24,23 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({ message: res.statusText }));
-    throw new ApiError(res.status, error.message || 'Request failed', error);
+    console.error('API Error:', res.status, JSON.stringify(error));
+    // NestJS HttpExceptionFilter wraps validation errors: { message: { message: [...], error: "Bad Request" } }
+    const raw = error.message;
+    let finalMsg: string;
+    if (typeof raw === 'string') {
+      finalMsg = raw;
+    } else if (Array.isArray(raw)) {
+      finalMsg = raw.join(', ');
+    } else if (raw && typeof raw === 'object') {
+      const inner = (raw as any).message;
+      if (Array.isArray(inner)) finalMsg = inner.join(', ');
+      else if (typeof inner === 'string') finalMsg = inner;
+      else finalMsg = (raw as any).error || JSON.stringify(raw);
+    } else {
+      finalMsg = res.statusText || 'Request failed';
+    }
+    throw new ApiError(res.status, finalMsg, error);
   }
 
   if (res.status === 204) return undefined as T;

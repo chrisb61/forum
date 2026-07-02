@@ -121,6 +121,7 @@ export default function SettingsPage() {
   const [profileVisibility, setProfileVisibility] = useState('members');
 
   useEffect(() => {
+    setCvError(null);
     if (!isLoading && !user) router.push('/login');
     if (user) {
       setDisplayName(user.displayName || '');
@@ -165,19 +166,24 @@ export default function SettingsPage() {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const res = await fetch(`${API_URL}/api/v1/cv/parse`, {
+      const authToken = token || localStorage.getItem('forum_token');
+      const res = await fetch(`${API_URL}/cv/parse`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${authToken}` },
         body: formData,
       });
       const result = await res.json();
-      if (!res.ok) throw new Error(result.message || 'Failed to parse CV');
+      if (!res.ok) {
+        const msg = result?.message?.message || result?.message || 'Upload failed. Please try again.';
+        setCvError(typeof msg === 'string' ? msg : 'Upload failed. Please try again.');
+        return;
+      }
       const d = result.data;
       // Pre-fill all fields from parsed CV
       if (d.displayName) setDisplayName(d.displayName);
       if (d.headline) setHeadline(d.headline);
       if (d.location) setLocation(d.location);
-      if (d.bio) setBio(d.bio);
+      if (d.bio) setBio(d.bio.slice(0, 500));
       if (d.professionalEmail) setProfessionalEmail(d.professionalEmail);
       if (d.phone) setPhone(d.phone);
       if (d.linkedIn) setLinkedIn(d.linkedIn);
@@ -190,7 +196,7 @@ export default function SettingsPage() {
       setCvSuccess(true);
       setActiveTab('identity');
     } catch (err: any) {
-      setCvError(err.message || 'Could not parse CV');
+      setCvError(err?.message ?? 'Could not parse CV');
     } finally {
       setCvParsing(false);
       if (cvInputRef.current) cvInputRef.current.value = '';
@@ -205,15 +211,21 @@ export default function SettingsPage() {
       await api.put('/users/profile', {
         displayName: displayName || undefined,
         bio: bio || undefined,
-        headline, location, availability,
-        professionalEmail, phone, linkedIn, website, twitterX,
+        headline: headline || undefined,
+        location: location || undefined,
+        availability: availability || undefined,
+        professionalEmail: professionalEmail || undefined,
+        phone: phone || undefined,
+        linkedIn: linkedIn || undefined,
+        website: website || undefined,
+        twitterX: twitterX || undefined,
         sectors, expertiseAreas, qualifications, boardExperience,
         showEmail, showPhone, showLinkedIn, profileVisibility,
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (err: any) {
-      setError(err.message || 'Failed to save');
+      setError(typeof err?.message === 'string' ? err.message : 'Failed to save. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -254,7 +266,7 @@ export default function SettingsPage() {
                 <CheckCircle className="h-4 w-4" /> CV imported — review your details below then click Save Profile.
               </div>
             )}
-            {cvError && <p className="text-red-400 text-xs mb-3">{cvError}</p>}
+            {typeof cvError === 'string' && cvError.length > 0 && <p className="text-red-400 text-xs mb-3">{cvError}</p>}
             <input ref={cvInputRef} type="file" accept=".pdf,.doc,.docx" onChange={handleCvUpload} className="hidden" />
             <Button
               type="button"

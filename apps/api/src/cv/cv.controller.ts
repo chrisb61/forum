@@ -2,6 +2,7 @@ import { Controller, Post, UseInterceptors, UploadedFile, Req } from '@nestjs/co
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
 import { CvService } from './cv.service';
+import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('CV')
 @ApiBearerAuth()
@@ -9,6 +10,7 @@ import { CvService } from './cv.service';
 export class CvController {
   constructor(private readonly cvService: CvService) {}
 
+  @Public()
   @Post('parse')
   @ApiOperation({ summary: 'Parse a CV and extract profile data' })
   @ApiConsumes('multipart/form-data')

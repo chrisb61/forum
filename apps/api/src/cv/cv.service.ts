@@ -1,7 +1,11 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import Anthropic from '@anthropic-ai/sdk';
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+function getClient() {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) throw new BadRequestException('CV parsing is not configured. Please contact the administrator.');
+  return new Anthropic({ apiKey });
+}
 
 const SYSTEM_PROMPT = `You are a professional CV parser for a senior executive networking platform.
 Extract structured information from the CV and return ONLY valid JSON — no markdown, no explanation.
@@ -47,9 +51,7 @@ For boardExperience, only include board-level, NED, Chair, advisory, and C-suite
 @Injectable()
 export class CvService {
   async parseCV(fileBuffer: Buffer, mimeType: string, filename: string): Promise<any> {
-    if (!process.env.ANTHROPIC_API_KEY) {
-      throw new BadRequestException('CV parsing is not configured. Please contact the administrator.');
-    }
+    const client = getClient();
 
     const isPdf = mimeType === 'application/pdf' || filename.toLowerCase().endsWith('.pdf');
     const isWord = mimeType.includes('word') || filename.toLowerCase().match(/\.docx?$/);
@@ -109,7 +111,8 @@ export class CvService {
       return { success: true, data: parsed };
     } catch (err: any) {
       if (err instanceof BadRequestException) throw err;
-      throw new BadRequestException('Could not parse CV. Please try a different file or fill in your profile manually.');
+      console.error('CV parse error:', err?.message ?? err);
+      throw new BadRequestException(err?.message ?? 'Could not parse CV. Please try a different file or fill in your profile manually.');
     }
   }
 }
