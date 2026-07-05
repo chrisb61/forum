@@ -45,6 +45,7 @@ export class AuthService {
         passwordHash,
         emailVerifyToken,
         displayName: dto.username,
+        memberType: (dto.memberType as any) || 'PROFESSIONAL',
       },
     });
 

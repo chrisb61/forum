@@ -37,7 +37,10 @@
       "PowerShell(Add-Type -AssemblyName System.IO.Compression.FileSystem; $zip = [System.IO.Compression.ZipFile]::OpenRead\\(\"C:\\\\Users\\\\C Bullock\\\\OneDrive\\\\Documents\\\\00012_ES\\\\ESForum_Gaps_Features.docx\"\\); $entry = $zip.Entries | Where-Object { $_.FullName -eq 'word/document.xml' }; $reader = New-Object System.IO.StreamReader\\($entry.Open\\(\\)\\); $reader.ReadToEnd\\(\\); $reader.Close\\(\\); $zip.Dispose\\(\\))",
       "Bash(mkdir -p \"C:\\\\Dev\\\\Forum\\\\apps\\\\web\\\\src\\\\app\\\\opportunities\" \"C:\\\\Dev\\\\Forum\\\\apps\\\\web\\\\src\\\\app\\\\opportunities\\\\new\" \"C:\\\\Dev\\\\Forum\\\\apps\\\\web\\\\src\\\\app\\\\opportunities\\\\[id]\")",
       "PowerShell(cd \"C:\\\\Dev\\\\Forum\"; $env:DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/forum\"; npx prisma migrate dev --name board_opportunities_endorsements --schema=packages/database/prisma/schema.prisma 2>&1)",
-      "PowerShell(cd \"C:\\\\Dev\\\\Forum\"; $env:DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/forum\"; npx prisma migrate dev --name professional_profile_contact_fields --schema=packages/database/prisma/schema.prisma 2>&1)"
+      "PowerShell(cd \"C:\\\\Dev\\\\Forum\"; $env:DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/forum\"; npx prisma migrate dev --name professional_profile_contact_fields --schema=packages/database/prisma/schema.prisma 2>&1)",
+      "WebSearch",
+      "Bash(extract-text \"C:\\\\Users\\\\C Bullock\\\\OneDrive\\\\Documents\\\\00012_ES\\\\ESForum_six questions_for_v2_050726.docx\")",
+      "Bash(python scripts/office/unpack.py \"C:\\\\Users\\\\C Bullock\\\\OneDrive\\\\Documents\\\\00012_ES\\\\ESForum_six questions_for_v2_050726.docx\" unpacked_answers/)"
     ]
   }
 }

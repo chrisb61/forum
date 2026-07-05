@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: { default: 'ESG Intelligence Network', template: '%s | ESG Intelligence Network' },
-  description: 'A private intelligence network for non-executive directors, board advisors, and sustainability professionals.',
+  description: 'The intelligence network where ESG expertise, AI-assisted collaboration, and transformational leadership converge.',
   manifest: '/manifest.json',
 };
 
@@ -17,6 +17,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
+        <div id="google_translate_element" style={{ display: 'none' }} />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              function googleTranslateElementInit() {
+                new google.translate.TranslateElement({
+                  pageLanguage: 'en',
+                  includedLanguages: 'zh-CN,de,fr,ja,es,ar,hi,bn,ta,pt',
+                  layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                  autoDisplay: false,
+                }, 'google_translate_element');
+              }
+            `,
+          }}
+        />
+        <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async />
         <Providers>
           <div className="min-h-screen flex flex-col">
             <Navbar />

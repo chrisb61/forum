@@ -9,18 +9,16 @@ export default function HomePage() {
 
       {/* Hero */}
       <section className="py-20 space-y-8">
-        <p className="text-sm font-semibold tracking-widest text-primary uppercase">
-          Professional Relationship Intelligence
-        </p>
-        <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight max-w-3xl">
-          Where ESG expertise{' '}
-          <span className="text-primary italic">becomes</span>{' '}
-          opportunity.
+        <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight whitespace-nowrap" style={{ color: '#C9A96E' }}>
+          The ESG Intelligence Network
         </h1>
+        <p className="text-2xl md:text-3xl font-semibold leading-snug max-w-3xl">
+          Where <span className="text-primary">ESG expertise</span>, AI-assisted collaboration and Change Leadership converge
+        </p>
         <p className="text-lg text-muted-foreground max-w-2xl leading-relaxed">
-          A private intelligence network for non-executive directors, board advisors, and
-          sustainability professionals. Build your reputation. Surface opportunities.
-          Amplify your influence.
+          A private, governed network for non-executive directors, board advisors, ESG strategists,
+          emerging talent, and the organisations that need them. Build your reputation. Surface
+          opportunities. Drive transformational change.
         </p>
         <blockquote className="border-l-4 border-primary pl-6 italic text-muted-foreground max-w-xl">
           &ldquo;ESG is not a cost — it is a cost-reduction and performance-improvement catalyst.&rdquo;

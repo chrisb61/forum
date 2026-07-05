@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Network, Bell, User, LogOut, Settings, Shield, ChevronDown, MessageSquare } from 'lucide-react';
 import { useState } from 'react';
+import LanguageSelector from './LanguageSelector';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -15,12 +16,15 @@ export default function Navbar() {
         <Link href="/" className="flex items-center gap-2">
           <Network className="h-5 w-5 text-primary" />
           <div className="flex flex-col leading-tight">
-            <span className="font-bold text-sm">ESG Intelligence</span>
-            <span className="text-[10px] tracking-widest text-primary uppercase font-medium">Network</span>
+            <span className="font-bold text-sm">ESG Intelligence Network</span>
+            <span className="text-[10px] tracking-wide text-primary/80 font-normal hidden lg:block" style={{maxWidth: '280px', lineHeight: '1.2'}}>Where expertise, AI collaboration &amp; leadership converge</span>
           </div>
         </Link>
 
         <nav className="flex items-center gap-1 ml-4">
+          <Link href="/features" className="text-sm font-medium text-primary hover:text-primary/80 px-3 py-1.5 rounded-md hover:bg-primary/10 transition-colors border border-primary/20 hover:border-primary/40">
+            Why Join
+          </Link>
           <Link href="/forums" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md hover:bg-accent transition-colors">
             Forums
           </Link>
@@ -39,6 +43,7 @@ export default function Navbar() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
+          <LanguageSelector />
           {user ? (
             <>
               <Link href="/notifications">

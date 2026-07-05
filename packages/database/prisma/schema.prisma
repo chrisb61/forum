@@ -15,6 +15,12 @@ enum Role {
   ADMINISTRATOR
 }
 
+enum MemberType {
+  PROFESSIONAL
+  STUDENT
+  CORPORATE
+}
+
 enum ThreadStatus {
   OPEN
   LOCKED
@@ -80,8 +86,9 @@ model User {
   displayName       String?
   avatar            String?
   bio               String?
-  role              Role      @default(MEMBER)
-  reputation        Int       @default(0)
+  role              Role       @default(MEMBER)
+  memberType        MemberType @default(PROFESSIONAL)
+  reputation        Int        @default(0)
   postCount         Int       @default(0)
   isEmailVerified   Boolean   @default(false)
   isSuspended       Boolean   @default(false)
@@ -115,6 +122,8 @@ model User {
   pollVotes              PollVote[]
   postVersions           PostVersion[]
   professionalProfile    ProfessionalProfile?
+  studentProfile         StudentProfile?
+  corporateProfile       CorporateProfile?
   boardOpportunities     BoardOpportunity[]
   opportunityExpressions OpportunityExpression[]
   endorsementsGiven      Endorsement[]           @relation("EndorsementsGiven")
@@ -559,4 +568,41 @@ model Endorsement {
   @@unique([endorserId, endorseeId, skill])
   @@index([endorseeId])
   @@index([endorserId])
+}
+
+model StudentProfile {
+  userId              String   @id
+  university          String?
+  degree              String?
+  graduationYear      Int?
+  studyArea           String?
+  placementAvailable  Boolean  @default(true)
+  linkedIn            String?
+  location            String?
+  bio                 String?
+  esgInterests        String[]
+  showEmail           Boolean  @default(false)
+  profileVisibility   String   @default("members")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CorporateProfile {
+  userId              String   @id
+  companyName         String?
+  companyWebsite      String?
+  sector              String?
+  companySize         String?
+  headquarters        String?
+  description         String?
+  lookingFor          String[]
+  contactName         String?
+  contactRole         String?
+  profileVisibility   String   @default("members")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
