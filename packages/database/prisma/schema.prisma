@@ -128,6 +128,10 @@ model User {
   opportunityExpressions OpportunityExpression[]
   endorsementsGiven      Endorsement[]           @relation("EndorsementsGiven")
   endorsementsReceived   Endorsement[]           @relation("EndorsementsReceived")
+  resources              Resource[]
+  resourceDownloads      ResourceDownload[]
+  courseListings         CourseListing[]
+  cvSubmissions          CvSubmission[]
 
   @@index([email])
   @@index([username])
@@ -605,4 +609,131 @@ model CorporateProfile {
   updatedAt           DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── Knowledge Library ───────────────────────────────────────────────────────
+
+enum ResourceType {
+  DOCUMENT
+  AUDIO
+  VIDEO_EMBED
+  IMAGE
+  OTHER
+}
+
+enum ResourceStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  FLAGGED
+}
+
+model Resource {
+  id          String         @id @default(cuid())
+  uploaderId  String
+  title       String
+  description String?
+  type        ResourceType
+  status      ResourceStatus @default(PENDING)
+
+  fileUrl     String?
+  filename    String?
+  fileSize    Int?
+  mimeType    String?
+  embedUrl    String?
+
+  category    String?
+  tags        String[]
+
+  financialFlagged       Boolean @default(false)
+  ipDeclared             Boolean @default(false)
+  hasFinancialDisclaimer Boolean @default(false)
+
+  moderatorId   String?
+  moderatorNote String?
+  reviewedAt    DateTime?
+
+  downloadCount Int @default(0)
+  viewCount     Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  uploader  User               @relation(fields: [uploaderId], references: [id])
+  downloads ResourceDownload[]
+
+  @@index([status])
+  @@index([uploaderId])
+  @@index([type])
+}
+
+model ResourceDownload {
+  id           String   @id @default(cuid())
+  resourceId   String
+  downloaderId String
+  createdAt    DateTime @default(now())
+
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  downloader User     @relation(fields: [downloaderId], references: [id])
+
+  @@unique([resourceId, downloaderId])
+  @@index([downloaderId])
+}
+
+// ─── Course Marketplace ───────────────────────────────────────────────────────
+
+enum CourseStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model CourseListing {
+  id                 String       @id @default(cuid())
+  providerId         String
+  title              String
+  providerName       String
+  description        String
+  isExternalProvider Boolean      @default(false)
+  externalUrl        String?
+  commissionUrl      String?
+  price              String?
+  deliveryMode       String?
+  startDate          DateTime?
+  sectors            String[]
+  status             CourseStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  provider User @relation(fields: [providerId], references: [id])
+
+  @@index([status])
+  @@index([providerId])
+}
+
+// ─── CV Writing Service ───────────────────────────────────────────────────────
+
+enum CvSubmissionStatus {
+  RECEIVED
+  IN_REVIEW
+  COMPLETED
+  CANCELLED
+}
+
+model CvSubmission {
+  id           String             @id @default(cuid())
+  userId       String
+  fileUrl      String
+  filename     String
+  notes        String?
+  status       CvSubmissionStatus @default(RECEIVED)
+  reviewerNote String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([status])
 }

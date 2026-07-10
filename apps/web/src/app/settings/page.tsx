@@ -121,7 +121,7 @@ export default function SettingsPage() {
   const [profileVisibility, setProfileVisibility] = useState('members');
 
   useEffect(() => {
-    setCvError(null);
+    setCvError('');
     if (!isLoading && !user) router.push('/login');
     if (user) {
       setDisplayName(user.displayName || '');

@@ -36,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>
           <div className="min-h-screen flex flex-col">
             <Navbar />
-            <main className="flex-1 container py-6">{children}</main>
+            <main className="flex-1 container py-6 max-w-6xl mx-auto w-full">{children}</main>
             <footer className="border-t py-4 text-center text-sm text-muted-foreground">
               <p>ESG Intelligence Network &copy; {new Date().getFullYear()}</p>
             </footer>

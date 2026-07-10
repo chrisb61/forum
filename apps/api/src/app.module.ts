@@ -21,6 +21,7 @@ import { ReputationModule } from './reputation/reputation.module';
 import { OpportunitiesModule } from './opportunities/opportunities.module';
 import { EndorsementsModule } from './endorsements/endorsements.module';
 import { CvModule } from './cv/cv.module';
+import { ResourcesModule } from './resources/resources.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { CvModule } from './cv/cv.module';
     OpportunitiesModule,
     EndorsementsModule,
     CvModule,
+    ResourcesModule,
   ],
 })
 export class AppModule {}
