@@ -60,8 +60,10 @@ export default function UploadResourcePage() {
     category: '',
     tags: '',
     ipDeclared: false,
+    rightsConfirmed: false,
     visibility: presetVisibility,
     groupId: presetGroupId,
+    rights: 'DOWNLOAD',
   });
   const [file, setFile] = useState<File | null>(null);
   const [financialWarning, setFinancialWarning] = useState(false);
@@ -94,6 +96,10 @@ export default function UploadResourcePage() {
       setError('You must declare that you own or have the right to share this content.');
       return;
     }
+    if (!form.rightsConfirmed) {
+      setError('You must confirm the usage rights you are granting to viewers.');
+      return;
+    }
     if (form.type === 'VIDEO_EMBED' && !form.embedUrl) {
       setError('Please provide an embed URL for video content.');
       return;
@@ -113,6 +119,7 @@ export default function UploadResourcePage() {
       if (form.category) data.append('category', form.category);
       if (form.tags) data.append('tags', form.tags);
       data.append('ipDeclared', 'true');
+      data.append('rights', form.rights);
       data.append('visibility', form.visibility);
       if (form.groupId) data.append('groupId', form.groupId);
       if (file) data.append('file', file);
@@ -155,7 +162,7 @@ export default function UploadResourcePage() {
         </p>
         <div className="flex justify-center gap-3">
           <Link href="/library"><Button>Back to Library</Button></Link>
-          <Button variant="outline" onClick={() => { setSuccess(false); setForm({ title: '', description: '', type: 'DOCUMENT', embedUrl: '', category: '', tags: '', ipDeclared: false, visibility: 'ALL_MEMBERS', groupId: '' }); setFile(null); }}>
+          <Button variant="outline" onClick={() => { setSuccess(false); setForm({ title: '', description: '', type: 'DOCUMENT', embedUrl: '', category: '', tags: '', ipDeclared: false, rightsConfirmed: false, visibility: 'ALL_MEMBERS', groupId: '', rights: 'DOWNLOAD' }); setFile(null); }}>
             Upload Another
           </Button>
         </div>
@@ -370,6 +377,61 @@ export default function UploadResourcePage() {
           )}
         </div>
 
+        {/* Usage rights */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Usage Rights for Viewers *</label>
+          <p className="text-xs text-muted-foreground">Choose what members of the platform are permitted to do with this content.</p>
+          <div className="grid gap-2">
+            {[
+              {
+                value: 'READ_ONLY',
+                label: 'Read Only',
+                desc: 'Members can view this content on the platform only. No downloading, copying or redistribution permitted.',
+                icon: '👁',
+              },
+              {
+                value: 'DOWNLOAD',
+                label: 'Download for personal use',
+                desc: 'Members may download this for their own reference. Redistribution or republishing is not permitted.',
+                icon: '⬇️',
+              },
+              {
+                value: 'SHARE',
+                label: 'Download and share with attribution',
+                desc: 'Members may share this content provided they credit the original author.',
+                icon: '🔗',
+              },
+              {
+                value: 'OPEN',
+                label: 'Open — no restrictions',
+                desc: 'No restrictions on use, copying or redistribution.',
+                icon: '🌐',
+              },
+            ].map(({ value, label, desc, icon }) => (
+              <label
+                key={value}
+                className={`flex items-start gap-3 rounded-lg border px-4 py-3 cursor-pointer transition-colors ${
+                  form.rights === value ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="rights"
+                  value={value}
+                  checked={form.rights === value}
+                  onChange={(e) => setForm((f) => ({ ...f, rights: e.target.value }))}
+                  className="accent-primary mt-0.5"
+                />
+                <span className="mr-1 text-base leading-none mt-0.5">{icon}</span>
+                <div>
+                  <p className="text-sm font-medium">{label}</p>
+                  <p className="text-xs text-muted-foreground">{desc}</p>
+                </div>
+              </label>
+            ))}
+          </div>
+        </div>
+
         {/* IP declaration */}
         <div className="rounded-lg border border-border p-4 space-y-3">
           <h3 className="font-medium text-sm">Intellectual Property Declaration</h3>
@@ -387,6 +449,20 @@ export default function UploadResourcePage() {
               this content, and understand I may request its removal at any time via my account settings.
             </span>
           </label>
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={form.rightsConfirmed}
+              onChange={(e) => setForm((f) => ({ ...f, rightsConfirmed: e.target.checked }))}
+              className="mt-0.5 accent-primary"
+            />
+            <span className="text-sm text-muted-foreground">
+              I confirm that the usage rights I have selected above accurately reflect the
+              permissions I am granting to other members of this platform, and I understand
+              that I am responsible for enforcing any restrictions beyond what the platform
+              technically prevents.
+            </span>
+          </label>
         </div>
 
         {error && (
@@ -395,7 +471,7 @@ export default function UploadResourcePage() {
           </div>
         )}
 
-        <Button type="submit" disabled={submitting || !form.ipDeclared} className="w-full">
+        <Button type="submit" disabled={submitting || !form.ipDeclared || !form.rightsConfirmed} className="w-full">
           {submitting ? 'Uploading…' : 'Submit for Review'}
         </Button>
       </form>

@@ -113,6 +113,7 @@ export class ResourcesController {
         ipDeclared: body.ipDeclared === 'true',
         visibility: body.visibility,
         groupId: body.groupId,
+        rights: body.rights,
       },
       file,
     );

@@ -14,9 +14,11 @@ import {
   Download,
   AlertTriangle,
   BookOpen,
-  Clock,
-  CheckCircle,
   Filter,
+  Eye,
+  Lock,
+  Share2,
+  Globe,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -184,8 +186,16 @@ export default function LibraryPage() {
   );
 }
 
+const RIGHTS_META: Record<string, { label: string; icon: React.ReactNode; canDownload: boolean; color: string }> = {
+  READ_ONLY: { label: 'Read only', icon: <Eye className="h-3 w-3" />, canDownload: false, color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' },
+  DOWNLOAD:  { label: 'Download permitted', icon: <Download className="h-3 w-3" />, canDownload: true, color: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
+  SHARE:     { label: 'Share with attribution', icon: <Share2 className="h-3 w-3" />, canDownload: true, color: 'text-green-400 bg-green-500/10 border-green-500/20' },
+  OPEN:      { label: 'Open — no restrictions', icon: <Globe className="h-3 w-3" />, canDownload: true, color: 'text-muted-foreground bg-muted border-border' },
+};
+
 function ResourceCard({ resource, user }: { resource: any; user: any }) {
   const [downloading, setDownloading] = useState(false);
+  const rights = RIGHTS_META[resource.rights ?? 'DOWNLOAD'] ?? RIGHTS_META['DOWNLOAD'];
 
   async function handleDownload() {
     setDownloading(true);
@@ -215,6 +225,11 @@ function ResourceCard({ resource, user }: { resource: any; user: any }) {
                 <h3 className="font-semibold text-foreground">{resource.title}</h3>
                 <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
                   {typeLabel(resource.type)}
+                </span>
+                {/* Rights badge */}
+                <span className={`text-xs px-2 py-0.5 rounded-full border flex items-center gap-1 ${rights.color}`}>
+                  {rights.icon}
+                  {rights.label}
                 </span>
                 {resource.financialFlagged && (
                   <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 flex items-center gap-1">
@@ -260,9 +275,17 @@ function ResourceCard({ resource, user }: { resource: any; user: any }) {
               advice under the FCA Financial Promotions Order 2005. Consult an authorised professional.
             </div>
           )}
+
+          {/* Read-only notice */}
+          {user && !rights.canDownload && resource.type !== 'VIDEO_EMBED' && (
+            <div className="mt-3 flex items-center gap-2 text-xs text-amber-400/80 bg-amber-500/10 border border-amber-500/20 rounded px-3 py-2">
+              <Lock className="h-3.5 w-3.5 shrink-0" />
+              The author has set this resource to <strong>Read Only</strong>. Downloading, copying and redistribution are not permitted.
+            </div>
+          )}
         </div>
 
-        {user && (
+        {user && (rights.canDownload || resource.type === 'VIDEO_EMBED') && (
           <Button
             size="sm"
             variant="outline"
@@ -270,9 +293,19 @@ function ResourceCard({ resource, user }: { resource: any; user: any }) {
             disabled={downloading}
             className="shrink-0"
           >
-            <Download className="h-4 w-4 mr-1.5" />
-            {resource.type === 'VIDEO_EMBED' ? 'Watch' : 'Download'}
+            {resource.type === 'VIDEO_EMBED' ? (
+              <><Eye className="h-4 w-4 mr-1.5" />Watch</>
+            ) : (
+              <><Download className="h-4 w-4 mr-1.5" />Download</>
+            )}
           </Button>
+        )}
+
+        {user && !rights.canDownload && resource.type !== 'VIDEO_EMBED' && (
+          <div className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-500/30 text-xs text-amber-400">
+            <Lock className="h-3.5 w-3.5" />
+            Read Only
+          </div>
         )}
       </div>
     </div>

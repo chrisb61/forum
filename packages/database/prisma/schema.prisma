@@ -652,6 +652,13 @@ enum ResourceStatus {
   FLAGGED
 }
 
+enum ResourceRights {
+  READ_ONLY
+  DOWNLOAD
+  SHARE
+  OPEN
+}
+
 model Resource {
   id          String         @id @default(cuid())
   uploaderId  String
@@ -671,6 +678,7 @@ model Resource {
 
   visibility  ResourceVisibility @default(ALL_MEMBERS)
   groupId     String?
+  rights      ResourceRights     @default(DOWNLOAD)
 
   financialFlagged       Boolean @default(false)
   ipDeclared             Boolean @default(false)

@@ -36,6 +36,7 @@ export class ResourcesService {
       ipDeclared: boolean;
       visibility?: string;
       groupId?: string;
+      rights?: string;
     },
     file?: Express.Multer.File,
   ) {
@@ -73,6 +74,7 @@ export class ResourcesService {
         ipDeclared: data.ipDeclared,
         visibility: (data.visibility as any) ?? 'ALL_MEMBERS',
         groupId: data.groupId || undefined,
+        rights: (data.rights as any) ?? 'DOWNLOAD',
       },
       include: { uploader: { select: { id: true, username: true, displayName: true } } },
     });
