@@ -23,6 +23,8 @@ import { EndorsementsModule } from './endorsements/endorsements.module';
 import { CvModule } from './cv/cv.module';
 import { ResourcesModule } from './resources/resources.module';
 import { GroupsModule } from './groups/groups.module';
+import { UpgradeModule } from './upgrade/upgrade.module';
+import { TalentModule } from './talent/talent.module';
 
 @Module({
   imports: [
@@ -50,6 +52,8 @@ import { GroupsModule } from './groups/groups.module';
     CvModule,
     ResourcesModule,
     GroupsModule,
+    UpgradeModule,
+    TalentModule,
   ],
 })
 export class AppModule {}

@@ -9,13 +9,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { timeAgo } from '@/lib/utils';
-import { AlertTriangle, FileText, GraduationCap } from 'lucide-react';
+import { AlertTriangle, FileText, GraduationCap, ArrowUpCircle, CheckCircle, XCircle } from 'lucide-react';
 
 export default function ModerationPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const [filter, setFilter] = useState('PENDING');
-  const [activeTab, setActiveTab] = useState<'reports' | 'library' | 'courses'>('reports');
+  const [activeTab, setActiveTab] = useState<'reports' | 'library' | 'courses' | 'upgrades'>('reports');
+  const [reviewNote, setReviewNote] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!isLoading && (!user || !['MODERATOR', 'ADMINISTRATOR'].includes(user.role))) {
@@ -41,14 +42,22 @@ export default function ModerationPage() {
     enabled: !!user && activeTab === 'courses',
   });
 
+  const { data: upgradeApplications = [], refetch: refetchUpgrades } = useQuery<any[]>({
+    queryKey: ['upgrades-all'],
+    queryFn: () => api.get('/upgrade'),
+    enabled: !!user && activeTab === 'upgrades' && user?.role === 'ADMINISTRATOR',
+  });
+
+  const pendingUpgrades = upgradeApplications.filter((a: any) => a.status === 'PENDING');
+
   const resolve = async (id: string, status: string) => {
     await api.put(`/reports/${id}/resolve`, { status });
     refetch();
   };
 
   const moderateResource = async (id: string, action: string, note?: string) => {
-    const token = localStorage.getItem('token');
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/library/${id}/moderate`, {
+    const token = localStorage.getItem('forum_token');
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/library/${id}/moderate`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ action, note }),
@@ -56,9 +65,19 @@ export default function ModerationPage() {
     refetchResources();
   };
 
+  const reviewUpgrade = async (id: string, action: 'APPROVED' | 'REJECTED') => {
+    const token = localStorage.getItem('forum_token');
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/upgrade/${id}/review`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ action, reviewerNote: reviewNote[id] || undefined }),
+    });
+    refetchUpgrades();
+  };
+
   const moderateCourse = async (id: string, action: string, commissionUrl?: string) => {
-    const token = localStorage.getItem('token');
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/courses/${id}/moderate`, {
+    const token = localStorage.getItem('forum_token');
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/courses/${id}/moderate`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ action, commissionUrl }),
@@ -78,6 +97,7 @@ export default function ModerationPage() {
           { key: 'reports', label: 'Reports', icon: AlertTriangle },
           { key: 'library', label: 'Library', icon: FileText },
           { key: 'courses', label: 'Courses', icon: GraduationCap },
+        { key: 'upgrades', label: `Upgrades${pendingUpgrades.length > 0 ? ` (${pendingUpgrades.length})` : ''}`, icon: ArrowUpCircle },
         ].map(({ key, label, icon: Icon }) => (
           <button
             key={key}
@@ -172,6 +192,87 @@ export default function ModerationPage() {
                     <Button size="sm" variant="ghost" className="text-destructive" onClick={() => moderateCourse(c.id, 'REJECTED')}>Reject</Button>
                   </div>
                 </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* Upgrades queue */}
+      {activeTab === 'upgrades' && (
+        <div className="space-y-4">
+          {upgradeApplications.length === 0 ? (
+            <p className="text-center py-10 text-muted-foreground">No upgrade applications yet.</p>
+          ) : (
+            upgradeApplications.map((app: any) => (
+              <div key={app.id} className={`rounded-xl border bg-card p-5 space-y-4 ${app.status === 'PENDING' ? 'border-amber-500/30' : 'border-border'}`}>
+                <div className="flex items-start justify-between gap-3 flex-wrap">
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <h3 className="font-semibold">{app.user?.displayName || app.user?.username}</h3>
+                      <span className="text-xs text-muted-foreground">@{app.user?.username}</span>
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-muted border border-border">
+                        {app.currentType} → {app.targetType}
+                      </span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${
+                        app.status === 'PENDING' ? 'text-amber-400 bg-amber-400/10 border-amber-400/20' :
+                        app.status === 'APPROVED' ? 'text-green-400 bg-green-400/10 border-green-400/20' :
+                        'text-destructive bg-destructive/10 border-destructive/20'
+                      }`}>
+                        {app.status}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Submitted {new Date(app.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-3 text-sm">
+                  {app.jobTitle && <div><span className="text-muted-foreground">Job title: </span>{app.jobTitle}</div>}
+                  {app.employer && <div><span className="text-muted-foreground">Employer: </span>{app.employer}</div>}
+                  {app.yearsExperience != null && <div><span className="text-muted-foreground">Experience: </span>{app.yearsExperience} years</div>}
+                  {app.qualifications && <div><span className="text-muted-foreground">Qualifications: </span>{app.qualifications}</div>}
+                  {app.linkedIn && (
+                    <div className="sm:col-span-2">
+                      <span className="text-muted-foreground">LinkedIn: </span>
+                      <a href={app.linkedIn} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{app.linkedIn}</a>
+                    </div>
+                  )}
+                  {app.statement && (
+                    <div className="sm:col-span-2">
+                      <p className="text-muted-foreground mb-1">Statement:</p>
+                      <p className="text-sm bg-muted/30 rounded-lg p-3 italic">{app.statement}</p>
+                    </div>
+                  )}
+                </div>
+
+                {app.status === 'PENDING' && (
+                  <div className="space-y-2 pt-2 border-t border-border">
+                    <input
+                      value={reviewNote[app.id] ?? ''}
+                      onChange={(e) => setReviewNote((n) => ({ ...n, [app.id]: e.target.value }))}
+                      placeholder="Optional note to applicant (shown if rejected)"
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => reviewUpgrade(app.id, 'APPROVED')}>
+                        <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
+                        Approve — Upgrade to Professional
+                      </Button>
+                      <Button size="sm" variant="ghost" className="text-destructive" onClick={() => reviewUpgrade(app.id, 'REJECTED')}>
+                        <XCircle className="h-3.5 w-3.5 mr-1.5" />
+                        Reject
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {app.reviewerNote && app.status !== 'PENDING' && (
+                  <p className="text-xs text-muted-foreground italic border-t border-border pt-2">
+                    Reviewer note: "{app.reviewerNote}"
+                  </p>
+                )}
               </div>
             ))
           )}

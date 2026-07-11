@@ -5,7 +5,8 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { CheckCircle, Plus, Trash2, Shield, Upload, Loader2, Sparkles } from 'lucide-react';
+import { CheckCircle, Plus, Trash2, Shield, Upload, Loader2, Sparkles, ArrowUpCircle } from 'lucide-react';
+import Link from 'next/link';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
@@ -249,6 +250,29 @@ export default function SettingsPage() {
           Your profile is your professional record within the ESG Intelligence Network.
         </p>
       </div>
+
+      {/* Student upgrade banner */}
+      {user?.memberType === 'STUDENT' && (
+        <div className="mb-6 rounded-xl border border-primary/30 bg-primary/5 p-5 flex items-start gap-4">
+          <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+            <ArrowUpCircle className="h-5 w-5 text-primary" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold text-foreground text-sm mb-1">Ready to upgrade your membership?</h3>
+            <p className="text-xs text-muted-foreground mb-3">
+              As a Student member you have access to core platform features. Upgrading to Professional
+              unlocks groups, the full talent network, all forums, and more. Note that your subscription
+              cost will increase on approval — our team will confirm the rate with you.
+            </p>
+            <Link href="/upgrade">
+              <button className="text-xs font-medium text-primary hover:underline flex items-center gap-1">
+                <ArrowUpCircle className="h-3.5 w-3.5" />
+                Apply to upgrade to Professional →
+              </button>
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* CV Upload banner */}
       <div className="mb-6 rounded-xl border border-primary/30 bg-primary/5 p-5">
