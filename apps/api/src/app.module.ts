@@ -22,6 +22,7 @@ import { OpportunitiesModule } from './opportunities/opportunities.module';
 import { EndorsementsModule } from './endorsements/endorsements.module';
 import { CvModule } from './cv/cv.module';
 import { ResourcesModule } from './resources/resources.module';
+import { GroupsModule } from './groups/groups.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { ResourcesModule } from './resources/resources.module';
     EndorsementsModule,
     CvModule,
     ResourcesModule,
+    GroupsModule,
   ],
 })
 export class AppModule {}

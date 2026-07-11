@@ -1,8 +1,10 @@
 'use client';
 import { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/lib/api';
 import { AlertTriangle, Upload, ArrowLeft, CheckCircle, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -38,7 +40,17 @@ function containsFinancialTerms(text: string) {
 export default function UploadResourcePage() {
   const { user } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const presetGroupId = searchParams.get('groupId') ?? '';
+  const presetVisibility = searchParams.get('visibility') ?? 'ALL_MEMBERS';
+
+  const { data: myGroups = [] } = useQuery<any[]>({
+    queryKey: ['groups-mine'],
+    queryFn: () => api.get('/groups/mine'),
+    enabled: !!user,
+  });
 
   const [form, setForm] = useState({
     title: '',
@@ -48,6 +60,8 @@ export default function UploadResourcePage() {
     category: '',
     tags: '',
     ipDeclared: false,
+    visibility: presetVisibility,
+    groupId: presetGroupId,
   });
   const [file, setFile] = useState<File | null>(null);
   const [financialWarning, setFinancialWarning] = useState(false);
@@ -99,10 +113,12 @@ export default function UploadResourcePage() {
       if (form.category) data.append('category', form.category);
       if (form.tags) data.append('tags', form.tags);
       data.append('ipDeclared', 'true');
+      data.append('visibility', form.visibility);
+      if (form.groupId) data.append('groupId', form.groupId);
       if (file) data.append('file', file);
 
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/library`, {
+      const token = localStorage.getItem('forum_token');
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/library`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: data,
@@ -139,7 +155,7 @@ export default function UploadResourcePage() {
         </p>
         <div className="flex justify-center gap-3">
           <Link href="/library"><Button>Back to Library</Button></Link>
-          <Button variant="outline" onClick={() => { setSuccess(false); setForm({ title: '', description: '', type: 'DOCUMENT', embedUrl: '', category: '', tags: '', ipDeclared: false }); setFile(null); }}>
+          <Button variant="outline" onClick={() => { setSuccess(false); setForm({ title: '', description: '', type: 'DOCUMENT', embedUrl: '', category: '', tags: '', ipDeclared: false, visibility: 'ALL_MEMBERS', groupId: '' }); setFile(null); }}>
             Upload Another
           </Button>
         </div>
@@ -306,6 +322,52 @@ export default function UploadResourcePage() {
             placeholder="e.g. TCFD, net-zero, Scope 3 (comma-separated)"
             className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
           />
+        </div>
+
+        {/* Visibility */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Who can see this resource?</label>
+          <div className="grid gap-2">
+            {[
+              { value: 'ALL_MEMBERS', label: 'All Members', desc: 'Visible to everyone signed in to the platform' },
+              { value: 'GROUP_ONLY', label: 'Specific Group', desc: 'Only members of the group you select can see this' },
+              { value: 'PRIVATE', label: 'Private (only me)', desc: 'Only you can see this — useful for drafts' },
+            ].map(({ value, label, desc }) => (
+              <label key={value} className={`flex items-start gap-3 rounded-lg border px-4 py-3 cursor-pointer transition-colors ${form.visibility === value ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'}`}>
+                <input
+                  type="radio"
+                  name="visibility"
+                  value={value}
+                  checked={form.visibility === value}
+                  onChange={(e) => setForm((f) => ({ ...f, visibility: e.target.value, groupId: e.target.value !== 'GROUP_ONLY' ? '' : f.groupId }))}
+                  className="accent-primary mt-0.5"
+                />
+                <div>
+                  <p className="text-sm font-medium">{label}</p>
+                  <p className="text-xs text-muted-foreground">{desc}</p>
+                </div>
+              </label>
+            ))}
+          </div>
+
+          {form.visibility === 'GROUP_ONLY' && (
+            <div className="mt-2 space-y-1.5">
+              <label className="text-sm font-medium">Select Group *</label>
+              <select
+                value={form.groupId}
+                onChange={(e) => setForm((f) => ({ ...f, groupId: e.target.value }))}
+                className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              >
+                <option value="">Choose a group…</option>
+                {myGroups.map((g: any) => (
+                  <option key={g.id} value={g.id}>{g.name}</option>
+                ))}
+              </select>
+              {myGroups.length === 0 && (
+                <p className="text-xs text-muted-foreground">You are not a member of any groups yet. <Link href="/groups" className="text-primary hover:underline">Join or create a group</Link> first.</p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* IP declaration */}

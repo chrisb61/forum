@@ -43,10 +43,11 @@ export class ResourcesController {
   @Get()
   @ApiOperation({ summary: 'List approved library resources' })
   list(
+    @CurrentUser() user: any,
     @Query('type') type?: string,
     @Query('category') category?: string,
   ) {
-    return this.resources.list({ type, category });
+    return this.resources.list(user.id, { type, category });
   }
 
   @Get('pending')
@@ -110,6 +111,8 @@ export class ResourcesController {
         category: body.category,
         tags: body.tags ? body.tags.split(',').map((t: string) => t.trim()) : [],
         ipDeclared: body.ipDeclared === 'true',
+        visibility: body.visibility,
+        groupId: body.groupId,
       },
       file,
     );

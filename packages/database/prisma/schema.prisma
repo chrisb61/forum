@@ -132,6 +132,8 @@ model User {
   resourceDownloads      ResourceDownload[]
   courseListings         CourseListing[]
   cvSubmissions          CvSubmission[]
+  ownedGroups            Group[]
+  groupMemberships       GroupMember[]
 
   @@index([email])
   @@index([username])
@@ -645,6 +647,9 @@ model Resource {
   category    String?
   tags        String[]
 
+  visibility  ResourceVisibility @default(ALL_MEMBERS)
+  groupId     String?
+
   financialFlagged       Boolean @default(false)
   ipDeclared             Boolean @default(false)
   hasFinancialDisclaimer Boolean @default(false)
@@ -661,10 +666,12 @@ model Resource {
 
   uploader  User               @relation(fields: [uploaderId], references: [id])
   downloads ResourceDownload[]
+  group     Group?             @relation(fields: [groupId], references: [id])
 
   @@index([status])
   @@index([uploaderId])
   @@index([type])
+  @@index([groupId])
 }
 
 model ResourceDownload {
@@ -733,6 +740,87 @@ model CvSubmission {
   updatedAt    DateTime           @updatedAt
 
   user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+}
+
+// ─── Resource Visibility ──────────────────────────────────────────────────────
+
+enum ResourceVisibility {
+  ALL_MEMBERS
+  GROUP_ONLY
+  PRIVATE
+}
+
+// ─── Groups / Cohorts ─────────────────────────────────────────────────────────
+
+enum GroupMemberRole {
+  OWNER
+  MEMBER
+}
+
+enum GroupMemberStatus {
+  ACTIVE
+  PENDING
+  REJECTED
+}
+
+model Group {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  ownerId       String
+  isDiscoverable Boolean @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  owner     User          @relation(fields: [ownerId], references: [id])
+  members   GroupMember[]
+  resources Resource[]
+
+  @@index([ownerId])
+}
+
+model GroupMember {
+  id        String            @id @default(cuid())
+  groupId   String
+  userId    String
+  role      GroupMemberRole   @default(MEMBER)
+  status    GroupMemberStatus @default(PENDING)
+  createdAt DateTime          @default(now())
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+}
+
+// ─── Student Upgrade Applications ────────────────────────────────────────────
+
+enum UpgradeStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model UpgradeApplication {
+  id              String        @id @default(cuid())
+  userId          String
+  currentType     String
+  targetType      String
+  jobTitle        String?
+  employer        String?
+  yearsExperience Int?
+  qualifications  String?
+  linkedIn        String?
+  statement       String?
+  status          UpgradeStatus @default(PENDING)
+  reviewerNote    String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   @@index([userId])
   @@index([status])

@@ -34,6 +34,8 @@ export class ResourcesService {
       category?: string;
       tags?: string[];
       ipDeclared: boolean;
+      visibility?: string;
+      groupId?: string;
     },
     file?: Express.Multer.File,
   ) {
@@ -69,21 +71,36 @@ export class ResourcesService {
         financialFlagged,
         hasFinancialDisclaimer: financialFlagged,
         ipDeclared: data.ipDeclared,
+        visibility: (data.visibility as any) ?? 'ALL_MEMBERS',
+        groupId: data.groupId || undefined,
       },
       include: { uploader: { select: { id: true, username: true, displayName: true } } },
     });
   }
 
-  async list(filters: { status?: ResourceStatus; type?: string; category?: string }) {
+  async list(userId: string, filters: { type?: string; category?: string }) {
+    // Get groups the user is an active member of
+    const memberships = await this.prisma.groupMember.findMany({
+      where: { userId, status: 'ACTIVE' },
+      select: { groupId: true },
+    });
+    const groupIds = memberships.map((m) => m.groupId);
+
     return this.prisma.resource.findMany({
       where: {
-        status: filters.status ?? 'APPROVED',
+        status: 'APPROVED',
         type: filters.type ? (filters.type as any) : undefined,
-        category: filters.category,
+        category: filters.category || undefined,
+        OR: [
+          { visibility: 'ALL_MEMBERS' },
+          { visibility: 'GROUP_ONLY', groupId: { in: groupIds } },
+          { visibility: 'PRIVATE', uploaderId: userId },
+        ],
       },
       include: {
         uploader: { select: { id: true, username: true, displayName: true, avatar: true } },
         _count: { select: { downloads: true } },
+        group: { select: { id: true, name: true } },
       },
       orderBy: { createdAt: 'desc' },
     });

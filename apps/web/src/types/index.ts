@@ -11,6 +11,7 @@ export interface User {
   avatar?: string;
   bio?: string;
   role: Role;
+  memberType?: 'PROFESSIONAL' | 'STUDENT' | 'CORPORATE';
   reputation: number;
   postCount: number;
   isEmailVerified?: boolean;

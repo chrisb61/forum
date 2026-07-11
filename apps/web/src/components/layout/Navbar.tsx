@@ -40,6 +40,9 @@ export default function Navbar() {
           <Link href="/library" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md hover:bg-accent transition-colors">
             Library
           </Link>
+          <Link href="/groups" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md hover:bg-accent transition-colors">
+            Groups
+          </Link>
           <Link href="/guide" className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md hover:bg-accent transition-colors">
             Guide
           </Link>
